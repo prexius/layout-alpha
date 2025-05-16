@@ -1,33 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useThemeContext } from "@/components/theme/theme-provider"
-import { MobileSidebar } from "./mobile-sidebar"
+import { useMobile } from "@/hooks/use-mobile"
+import { useEffect } from "react"
 import { DesktopSidebar } from "./desktop-sidebar"
+import { MobileSidebar } from "./mobile-sidebar"
 
 export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen, isHorizontalLayout = false }) {
 	const { direction } = useThemeContext()
-	const [isMobile, setIsMobile] = useState(false)
+	const isMobile = useMobile()
 
-	// Check if mobile on mount and when window resizes
+	// Update collapsed state when switching between mobile and desktop
 	useEffect(() => {
-		const checkIfMobile = () => {
-			const isMobileView = window.innerWidth < 768
-			setIsMobile(isMobileView)
-			if (isMobileView && !isMobileOpen) {
-				setIsCollapsed(true)
-			}
+		if (isMobile && !isMobileOpen) {
+			setIsCollapsed(true)
 		}
-
-		// Initial check
-		checkIfMobile()
-
-		// Add event listener
-		window.addEventListener("resize", checkIfMobile)
-
-		// Cleanup
-		return () => window.removeEventListener("resize", checkIfMobile)
-	}, [setIsCollapsed, isMobileOpen])
+	}, [isMobile, isMobileOpen, setIsCollapsed])
 
 	// Render mobile sidebar or horizontal layout
 	if (isMobile || isHorizontalLayout) {

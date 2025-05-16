@@ -4,29 +4,31 @@ import { Footer } from "@/components/layout/footer"
 // import { HorizontalHeader } from "@/components/layout/horizontal-header"
 import { Sidebar } from "@/components/layout/sidebar"
 // import { VerticalHeader } from "@/components/layout/vertical-header"
-import { useTheme } from "@/components/theme/theme-provider"
+import { useThemeContext } from "@/components/theme/theme-provider"
 import { cn } from "@/lib/utils"
 import { useEffect, useMemo, useState } from "react"
 import { HorizontalHeader } from "./horizontal-header"
 import { VerticalHeader } from "./vertical-header"
 
 export function Layout({ children }) {
-	const { layout, direction } = useTheme()
+	// const { layout, direction } = useTheme()
+
+	const { layout, direction } = useThemeContext()
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [isMobileOpen, setIsMobileOpen] = useState(false)
 	const isVertical = layout === "vertical"
 	const isHorizontal = layout === "horizontal"
 
 	// Reset sidebar state when layout changes
-	useEffect(() => {
-		// Close mobile sidebar when layout changes
-		setIsMobileOpen(false)
+	// useEffect(() => {
+	// 	// Close mobile sidebar when layout changes
+	// 	setIsMobileOpen(false)
 
-		// Set collapsed state based on layout
-		if (isHorizontal) {
-			setIsCollapsed(true) // Always start collapsed in horizontal mode
-		}
-	}, [layout, isHorizontal])
+	// 	// Set collapsed state based on layout
+	// 	if (isHorizontal) {
+	// 		setIsCollapsed(true) // Always start collapsed in horizontal mode
+	// 	}
+	// }, [layout, isHorizontal])
 
 	// Toggle sidebar collapsed state
 	const toggleSidebar = () => setIsCollapsed(!isCollapsed)
