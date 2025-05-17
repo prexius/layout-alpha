@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useMemo } from "react"
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
-import defaultConfig from "./config"
+import defaultConfig from "./default-config"
 
 // Create the context
 const ThemeContext = createContext({

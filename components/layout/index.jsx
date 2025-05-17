@@ -6,9 +6,9 @@ import { Sidebar } from "@/components/layout/sidebar"
 // import { VerticalHeader } from "@/components/layout/vertical-header"
 import { useThemeContext } from "@/components/theme/theme-provider"
 import { cn } from "@/lib/utils"
-import { useEffect, useMemo, useState } from "react"
-import { HorizontalHeader } from "./horizontal-header"
-import { VerticalHeader } from "./vertical-header"
+import { useMemo, useState } from "react"
+import { HorizontalHeader } from "./header/horizontal-header"
+import { VerticalHeader } from "./header/vertical-header"
 
 export function Layout({ children }) {
 	// const { layout, direction } = useTheme()
