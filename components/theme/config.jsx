@@ -1,7 +1,7 @@
 // Theme configuration options
 const defaultConfig = {
 	// Default layout (vertical or horizontal)
-	defaultLayout: "vertical",
+	defaultLayout: "horizontal",
   
 	// Default direction (ltr or rtl)
 	defaultDirection: "ltr",
