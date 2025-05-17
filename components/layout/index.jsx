@@ -65,7 +65,7 @@ export function Layout({ children }) {
 					<HorizontalHeader toggleSidebar={toggleSidebar} setMobileOpen={setIsMobileOpen} />
 				)}
 				<main className="flex-1">
-					<div className="p-4">{children}</div>
+					<div className="p-4 px-8">{children}</div>
 				</main>
 				<Footer />
 			</div>
