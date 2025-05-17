@@ -1,16 +1,16 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useMemo } from "react"
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import defaultConfig from "./default-config"
 
 // Create the context
 const ThemeContext = createContext({
-  layout: defaultConfig.defaultLayout,
-  setLayout: () => {},
-  direction: defaultConfig.defaultDirection,
-  setDirection: () => {},
-  config: defaultConfig,
+	layout: defaultConfig.defaultLayout,
+	setLayout: () => { },
+	direction: defaultConfig.defaultDirection,
+	setDirection: () => { },
+	config: defaultConfig,
 })
 
 // Hook to use the theme context
@@ -18,112 +18,98 @@ export const useThemeContext = () => useContext(ThemeContext)
 
 // Custom hook that combines theme context with next-themes
 export const useTheme = () => {
-  const nextTheme = useNextTheme()
-  const themeContext = useThemeContext()
+	const nextTheme = useNextTheme()
+	const themeContext = useThemeContext()
 
-  return {
-    ...nextTheme,
-    ...themeContext,
-  }
-}
-
-// Helper function to safely get item from localStorage
-const safeGetItem = (key, defaultValue) => {
-  try {
-    const item = localStorage.getItem(key)
-    return item !== null ? item : defaultValue
-  } catch (error) {
-    console.error(`Error reading ${key} from localStorage:`, error)
-    return defaultValue
-  }
-}
-
-// Helper function to safely set item in localStorage
-const safeSetItem = (key, value) => {
-  try {
-    localStorage.setItem(key, value)
-    return true
-  } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error)
-    return false
-  }
+	return {
+		...nextTheme,
+		...themeContext,
+	}
 }
 
 export function ThemeProvider({ children }) {
-  // Layout and direction state
-  const [layout, setLayout] = useState(defaultConfig.defaultLayout)
-  const [direction, setDirection] = useState(defaultConfig.defaultDirection)
-  const [mounted, setMounted] = useState(false)
+	// Layout and direction state
+	const [layout, setLayout] = useState(defaultConfig.defaultLayout)
+	const [direction, setDirection] = useState(defaultConfig.defaultDirection)
+	const [mounted, setMounted] = useState(false)
 
-  // Initialize state from localStorage or defaultConfig
-  useEffect(() => {
-    setMounted(true)
+	// Prevent hydration mismatch
+	useEffect(() => {
+		setMounted(true)
 
-    // Load saved preferences from localStorage if available
-    const savedLayout = safeGetItem("layout", defaultConfig.defaultLayout)
-    const savedDirection = safeGetItem("direction", defaultConfig.defaultDirection)
+		// Load saved preferences from localStorage if available
+		try {
+			const savedLayout = localStorage.getItem("layout")
+			const savedDirection = localStorage.getItem("direction")
 
-    // Validate saved values against available options
-    const validLayout = defaultConfig.availableLayouts.includes(savedLayout) ? savedLayout : defaultConfig.defaultLayout
+			if (savedLayout && defaultConfig.availableLayouts.includes(savedLayout)) {
+				setLayout(savedLayout)
+			}
 
-    const validDirection = defaultConfig.availableDirections.includes(savedDirection)
-      ? savedDirection
-      : defaultConfig.defaultDirection
+			if (savedDirection && defaultConfig.availableDirections.includes(savedDirection)) {
+				setDirection(savedDirection)
+			}
+		} catch (error) {
+			console.error("Error loading theme preferences:", error)
+		}
+	}, [])
 
-    // Update state with validated values
-    setLayout(validLayout)
-    setDirection(validDirection)
+	// Handle layout change
+	const handleLayoutChange = (newLayout) => {
+		if (newLayout !== layout) {
+			setLayout(newLayout)
+		}
+	}
 
-    // Apply direction to html element
-    document.documentElement.dir = validDirection
-  }, [])
+	// Handle direction change
+	const handleDirectionChange = (newDirection) => {
+		if (newDirection !== direction) {
+			setDirection(newDirection)
+		}
+	}
 
-  // Handle layout change
-  const handleLayoutChange = (newLayout) => {
-    if (newLayout !== layout && defaultConfig.availableLayouts.includes(newLayout)) {
-      setLayout(newLayout)
-      safeSetItem("layout", newLayout)
-    }
-  }
+	// Save preferences to localStorage when they change
+	useEffect(() => {
+		if (mounted) {
+			try {
+				localStorage.setItem("layout", layout)
+				localStorage.setItem("direction", direction)
 
-  // Handle direction change
-  const handleDirectionChange = (newDirection) => {
-    if (newDirection !== direction && defaultConfig.availableDirections.includes(newDirection)) {
-      setDirection(newDirection)
-      safeSetItem("direction", newDirection)
+				// Apply direction to html element
+				document.documentElement.dir = direction
+			} catch (error) {
+				console.error("Error saving theme preferences:", error)
+			}
+		}
+	}, [layout, direction, mounted])
 
-      // Apply direction to html element
-      document.documentElement.dir = newDirection
-    }
-  }
+	// Memoize context value to prevent unnecessary re-renders
+	const contextValue = useMemo(
+		() => ({
+			layout,
+			setLayout: handleLayoutChange,
+			direction,
+			setDirection: handleDirectionChange,
+			config: defaultConfig,
+		}),
+		[layout, direction],
+	)
 
-  // Memoize context value to prevent unnecessary re-renders
-  const contextValue = useMemo(
-    () => ({
-      layout,
-      setLayout: handleLayoutChange,
-      direction,
-      setDirection: handleDirectionChange,
-      config: defaultConfig,
-    }),
-    [layout, direction],
-  )
+	// If not mounted yet, return null to prevent hydration mismatch
+	if (!mounted) {
+		return null
+	}
 
-  // If not mounted yet, return null to prevent hydration mismatch
-  if (!mounted) {
-    return null
-  }
-
-  return (
-    <ThemeContext.Provider value={contextValue}>
-      <NextThemesProvider
-        attribute="class"
-        defaultTheme={defaultConfig.themeOptions.defaultTheme}
-        enableSystem={defaultConfig.themeOptions.enableSystem}
-        disableTransitionOnChange={defaultConfig.themeOptions.disableTransitionOnChange}
-      >
-        {children}
-      </NextThemesProvider>
-    </ThemeContext.Provider>
-  )
+	return (
+		<ThemeContext.Provider value={contextValue}>
+			<NextThemesProvider
+				attribute="class"
+				defaultTheme={defaultConfig.themeOptions.defaultTheme}
+				enableSystem={defaultConfig.themeOptions.enableSystem}
+				disableTransitionOnChange={defaultConfig.themeOptions.disableTransitionOnChange}
+			>
+				{children}
+			</NextThemesProvider>
+		</ThemeContext.Provider>
+	)
 }
