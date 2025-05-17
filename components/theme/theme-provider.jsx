@@ -27,61 +27,75 @@ export const useTheme = () => {
   }
 }
 
+// Helper function to safely get item from localStorage
+const safeGetItem = (key, defaultValue) => {
+  try {
+    const item = localStorage.getItem(key)
+    return item !== null ? item : defaultValue
+  } catch (error) {
+    console.error(`Error reading ${key} from localStorage:`, error)
+    return defaultValue
+  }
+}
+
+// Helper function to safely set item in localStorage
+const safeSetItem = (key, value) => {
+  try {
+    localStorage.setItem(key, value)
+    return true
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error)
+    return false
+  }
+}
+
 export function ThemeProvider({ children }) {
   // Layout and direction state
   const [layout, setLayout] = useState(defaultConfig.defaultLayout)
   const [direction, setDirection] = useState(defaultConfig.defaultDirection)
   const [mounted, setMounted] = useState(false)
 
-  // Prevent hydration mismatch
+  // Initialize state from localStorage or defaultConfig
   useEffect(() => {
     setMounted(true)
 
     // Load saved preferences from localStorage if available
-    try {
-      const savedLayout = localStorage.getItem("layout")
-      const savedDirection = localStorage.getItem("direction")
+    const savedLayout = safeGetItem("layout", defaultConfig.defaultLayout)
+    const savedDirection = safeGetItem("direction", defaultConfig.defaultDirection)
 
-      if (savedLayout && defaultConfig.availableLayouts.includes(savedLayout)) {
-        setLayout(savedLayout)
-      }
+    // Validate saved values against available options
+    const validLayout = defaultConfig.availableLayouts.includes(savedLayout) ? savedLayout : defaultConfig.defaultLayout
 
-      if (savedDirection && defaultConfig.availableDirections.includes(savedDirection)) {
-        setDirection(savedDirection)
-      }
-    } catch (error) {
-      console.error("Error loading theme preferences:", error)
-    }
+    const validDirection = defaultConfig.availableDirections.includes(savedDirection)
+      ? savedDirection
+      : defaultConfig.defaultDirection
+
+    // Update state with validated values
+    setLayout(validLayout)
+    setDirection(validDirection)
+
+    // Apply direction to html element
+    document.documentElement.dir = validDirection
   }, [])
 
   // Handle layout change
   const handleLayoutChange = (newLayout) => {
-    if (newLayout !== layout) {
+    if (newLayout !== layout && defaultConfig.availableLayouts.includes(newLayout)) {
       setLayout(newLayout)
+      safeSetItem("layout", newLayout)
     }
   }
 
   // Handle direction change
   const handleDirectionChange = (newDirection) => {
-    if (newDirection !== direction) {
+    if (newDirection !== direction && defaultConfig.availableDirections.includes(newDirection)) {
       setDirection(newDirection)
+      safeSetItem("direction", newDirection)
+
+      // Apply direction to html element
+      document.documentElement.dir = newDirection
     }
   }
-
-  // Save preferences to localStorage when they change
-  useEffect(() => {
-    if (mounted) {
-      try {
-        localStorage.setItem("layout", layout)
-        localStorage.setItem("direction", direction)
-
-        // Apply direction to html element
-        document.documentElement.dir = direction
-      } catch (error) {
-        console.error("Error saving theme preferences:", error)
-      }
-    }
-  }, [layout, direction, mounted])
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
