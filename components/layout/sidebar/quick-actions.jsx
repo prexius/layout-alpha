@@ -23,20 +23,20 @@ export function QuickActions({ mobile, onItemClick, isCollapsed }) {
 			variant: "outline",
 			badge: "3",
 		},
-		// {
-		// 	name: "Rewards",
-		// 	href: "/rewards",
-		// 	icon: Gift,
-		// 	variant: "outline",
-		// 	badge: "New",
-		// 	badgeVariant: "success",
-		// },
-		// {
-		// 	name: "Help & Support",
-		// 	href: "/help",
-		// 	icon: HelpCircle,
-		// 	variant: "outline",
-		// },
+		{
+			name: "Rewards",
+			href: "/rewards",
+			icon: Gift,
+			variant: "outline",
+			badge: "New",
+			badgeVariant: "success",
+		},
+		{
+			name: "Help & Support",
+			href: "/help",
+			icon: HelpCircle,
+			variant: "outline",
+		},
 	]
 
 	return (

@@ -1,16 +1,16 @@
 "use client"
 
+import { createContext, useContext, useState, useEffect, useMemo } from "react"
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
-import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import defaultConfig from "./default-config"
 
 // Create the context
 const ThemeContext = createContext({
-	layout: defaultConfig.defaultLayout,
-	setLayout: () => { },
-	direction: defaultConfig.defaultDirection,
-	setDirection: () => { },
-	config: defaultConfig,
+  layout: defaultConfig.defaultLayout,
+  setLayout: () => {},
+  direction: defaultConfig.defaultDirection,
+  setDirection: () => {},
+  config: defaultConfig,
 })
 
 // Hook to use the theme context
@@ -18,98 +18,98 @@ export const useThemeContext = () => useContext(ThemeContext)
 
 // Custom hook that combines theme context with next-themes
 export const useTheme = () => {
-	const nextTheme = useNextTheme()
-	const themeContext = useThemeContext()
+  const nextTheme = useNextTheme()
+  const themeContext = useThemeContext()
 
-	return {
-		...nextTheme,
-		...themeContext,
-	}
+  return {
+    ...nextTheme,
+    ...themeContext,
+  }
 }
 
 export function ThemeProvider({ children }) {
-	// Layout and direction state
-	const [layout, setLayout] = useState(defaultConfig.defaultLayout)
-	const [direction, setDirection] = useState(defaultConfig.defaultDirection)
-	const [mounted, setMounted] = useState(false)
+  // Layout and direction state
+  const [layout, setLayout] = useState(defaultConfig.defaultLayout)
+  const [direction, setDirection] = useState(defaultConfig.defaultDirection)
+  const [mounted, setMounted] = useState(false)
 
-	// Prevent hydration mismatch
-	useEffect(() => {
-		setMounted(true)
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
 
-		// Load saved preferences from localStorage if available
-		try {
-			const savedLayout = localStorage.getItem("layout")
-			const savedDirection = localStorage.getItem("direction")
+    // Load saved preferences from localStorage if available
+    try {
+      const savedLayout = localStorage.getItem("layout")
+      const savedDirection = localStorage.getItem("direction")
 
-			if (savedLayout && defaultConfig.availableLayouts.includes(savedLayout)) {
-				setLayout(savedLayout)
-			}
+      if (savedLayout && defaultConfig.availableLayouts.includes(savedLayout)) {
+        setLayout(savedLayout)
+      }
 
-			if (savedDirection && defaultConfig.availableDirections.includes(savedDirection)) {
-				setDirection(savedDirection)
-			}
-		} catch (error) {
-			console.error("Error loading theme preferences:", error)
-		}
-	}, [])
+      if (savedDirection && defaultConfig.availableDirections.includes(savedDirection)) {
+        setDirection(savedDirection)
+      }
+    } catch (error) {
+      console.error("Error loading theme preferences:", error)
+    }
+  }, [])
 
-	// Handle layout change
-	const handleLayoutChange = (newLayout) => {
-		if (newLayout !== layout) {
-			setLayout(newLayout)
-		}
-	}
+  // Handle layout change
+  const handleLayoutChange = (newLayout) => {
+    if (newLayout !== layout) {
+      setLayout(newLayout)
+    }
+  }
 
-	// Handle direction change
-	const handleDirectionChange = (newDirection) => {
-		if (newDirection !== direction) {
-			setDirection(newDirection)
-		}
-	}
+  // Handle direction change
+  const handleDirectionChange = (newDirection) => {
+    if (newDirection !== direction) {
+      setDirection(newDirection)
+    }
+  }
 
-	// Save preferences to localStorage when they change
-	useEffect(() => {
-		if (mounted) {
-			try {
-				localStorage.setItem("layout", layout)
-				localStorage.setItem("direction", direction)
+  // Save preferences to localStorage when they change
+  useEffect(() => {
+    if (mounted) {
+      try {
+        localStorage.setItem("layout", layout)
+        localStorage.setItem("direction", direction)
 
-				// Apply direction to html element
-				document.documentElement.dir = direction
-			} catch (error) {
-				console.error("Error saving theme preferences:", error)
-			}
-		}
-	}, [layout, direction, mounted])
+        // Apply direction to html element
+        document.documentElement.dir = direction
+      } catch (error) {
+        console.error("Error saving theme preferences:", error)
+      }
+    }
+  }, [layout, direction, mounted])
 
-	// Memoize context value to prevent unnecessary re-renders
-	const contextValue = useMemo(
-		() => ({
-			layout,
-			setLayout: handleLayoutChange,
-			direction,
-			setDirection: handleDirectionChange,
-			config: defaultConfig,
-		}),
-		[layout, direction],
-	)
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      layout,
+      setLayout: handleLayoutChange,
+      direction,
+      setDirection: handleDirectionChange,
+      config: defaultConfig,
+    }),
+    [layout, direction],
+  )
 
-	// If not mounted yet, return null to prevent hydration mismatch
-	if (!mounted) {
-		return null
-	}
+  // If not mounted yet, return null to prevent hydration mismatch
+  if (!mounted) {
+    return null
+  }
 
-	return (
-		<ThemeContext.Provider value={contextValue}>
-			<NextThemesProvider
-				attribute="class"
-				defaultTheme={defaultConfig.themeOptions.defaultTheme}
-				enableSystem={defaultConfig.themeOptions.enableSystem}
-				disableTransitionOnChange={defaultConfig.themeOptions.disableTransitionOnChange}
-			>
-				{children}
-			</NextThemesProvider>
-		</ThemeContext.Provider>
-	)
+  return (
+    <ThemeContext.Provider value={contextValue}>
+      <NextThemesProvider
+        attribute="class"
+        defaultTheme={defaultConfig.themeOptions.defaultTheme}
+        enableSystem={defaultConfig.themeOptions.enableSystem}
+        disableTransitionOnChange={defaultConfig.themeOptions.disableTransitionOnChange}
+      >
+        {children}
+      </NextThemesProvider>
+    </ThemeContext.Provider>
+  )
 }
